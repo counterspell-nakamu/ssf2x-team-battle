@@ -29,6 +29,29 @@
 
   h2, h3 { margin: 5px 0 10px 0; }
 
+  .admin-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .manual-link {
+    color: #ff9f1c;
+    font-size: 0.9em;
+    text-decoration: none;
+    background: #252533;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    font-weight: normal;
+  }
+  .manual-link:hover {
+    background: #333348;
+    color: #fff;
+  }
+
   .admin-panel {
     background: var(--panel-bg);
     border: 1px solid #333;
@@ -37,7 +60,6 @@
     overflow: hidden;
   }
 
-  /* ヘッダー全体の横並びレイアウト設定 */
   .admin-summary {
     display: flex;
     justify-content: space-between;
@@ -57,7 +79,6 @@
     padding: 12px;
   }
 
-  /* ヘッダー右側のルーム操作エリア */
   .room-header-controls {
     display: flex;
     align-items: center;
@@ -143,7 +164,6 @@
     padding: 0 2px;
   }
 
-  /* 4列メインレイアウト */
   .obs-display {
     display: grid;
     grid-template-columns: 1fr 1.2fr 1.2fr 1fr;
@@ -215,7 +235,6 @@
   .is-hidden .player-name { color: #666; }
   .is-hidden .char-name { color: #444; }
 
-  /* モーダル＆ドラッグ行スタイル */
   .modal {
     display: none;
     position: fixed;
@@ -261,7 +280,6 @@
     gap: 2px;
   }
 
-  /* キャラ選択ボタン＆ポップアップUI */
   .char-picker-btn {
     display: flex;
     align-items: center;
@@ -312,9 +330,11 @@
   <div class="admin-panel">
     <details open>
       <summary class="admin-summary">
-        <span>▼ ⚙️ 管理操作パネル</span>
+        <div class="admin-summary-header" onclick="event.stopPropagation();">
+          <span>▼ ⚙️ 管理操作パネル</span>
+          <a href="https://github.com/counterspell-nakamu/ssf2x-team-battle" target="_blank" class="manual-link" onclick="event.stopPropagation();">📖 使い方 / Manual</a>
+        </div>
 
-        <!-- 一番右上（ヘッダー内）のルーム表示＆切り替え機能 -->
         <div class="room-header-controls" onclick="event.stopPropagation();">
           <span>🏠 現在のルーム: <strong id="currentRoomDisplay" style="color:#ff9f1c; font-size:1.1em;">default</strong></span>
           <input type="text" id="roomInput" placeholder="部屋名" style="width:140px; padding:3px 6px;">
@@ -333,7 +353,6 @@
               <button class="btn" onclick="addNewPlayer()">名簿に追加</button>
             </div>
 
-            <!-- ハンデ戦・チーム分け設定を追加 -->
             <div class="mode-select" style="margin-bottom:8px;">
               <b>⚖️ チーム分けモード:</b><br>
               <label><input type="radio" name="splitMode" value="normal" checked> 通常（半々で自動ランダム）</label><br>
@@ -346,12 +365,9 @@
 
           <div>
             <h3>2. オーダー＆キャラ設定</h3>
-            <!-- 対戦枠数（2〜16枠）選択機能 -->
             <div style="margin-bottom:8px; display:flex; align-items:center; gap:8px; background:#111118; padding:6px 8px; border-radius:6px;">
               <label for="slotCountSelect" style="font-weight:bold; font-size:0.9em;">🎯 対戦枠数 (キャラ数):</label>
-              <select id="slotCountSelect" onchange="changeSlotCount(this.value)" style="padding:3px 6px;">
-                <!-- JavaScriptで2〜16枠を動的に生成 -->
-              </select>
+              <select id="slotCountSelect" onchange="changeSlotCount(this.value)" style="padding:3px 6px;"></select>
             </div>
 
             <div class="mode-select">
@@ -379,7 +395,6 @@
     </details>
   </div>
 
-  <!-- 4列レイアウト -->
   <div class="obs-display">
     <div class="team-column">
       <div class="team-title bench-header">1P 待機 (ベンチ)</div>
@@ -402,7 +417,6 @@
     </div>
   </div>
 
-  <!-- オーダー設定モーダル -->
   <div id="orderModal" class="modal">
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
@@ -421,11 +435,9 @@
     </div>
   </div>
 
-  <!-- キャラ選択 8x2 パレット (ポップアップ用) -->
   <div id="charPalette" class="char-palette"></div>
 
 <script>
-// --- Firebase初期設定 ---
 const firebaseConfig = {
   apiKey: "AIzaSyDMgiXpRGBLJofwxWEh0pG5b3FQ7yZNLK8",
   authDomain: "sf2x-app.firebaseapp.com",
@@ -438,7 +450,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// --- ルーム（部屋）機能 ---
 const urlParams = new URLSearchParams(window.location.search);
 let currentRoom = urlParams.get('room') || 'default';
 
@@ -447,7 +458,6 @@ const allCharacters = baseChars.map((name, i) => ({
   id: `x_${i}`, name: `X ${name}`, icon: `image/x_${i}.png`
 }));
 
-// 初期名簿プレイヤーを設定
 const defaultPlayers = ["ウメハラ", "ヌキ", "ハイタニ", "サコー", "ナカム～", "ぐっち", "こたか", "サシシ"];
 
 let appState = {
@@ -469,11 +479,9 @@ window.onload = function() {
   initSlotSelectOptions();
   initCharPalette();
   
-  // ルーム名表示更新
   document.getElementById("currentRoomDisplay").textContent = currentRoom;
   document.getElementById("roomInput").value = currentRoom;
 
-  // ルームごとのデータベースパスを監視 (`sf2x_rooms/部屋名`)
   db.ref(`sf2x_rooms/${currentRoom}`).on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -505,7 +513,6 @@ window.onload = function() {
   });
 };
 
-// 2〜16の選択肢を動적生成
 function initSlotSelectOptions() {
   const select = document.getElementById("slotCountSelect");
   select.innerHTML = "";
@@ -608,7 +615,6 @@ function createOrdersEmpty() {
   return { match: orders, bench: [] };
 }
 
-// チェック状態の保存キー
 function getStorageKey() {
   return `sf2x_checklist_${currentRoom}`;
 }
@@ -619,7 +625,6 @@ function renderMasterChecklist() {
   container.innerHTML = "";
   if (!appState.masterPlayers) appState.masterPlayers = [...defaultPlayers];
 
-  // ローカルストレージからチェック状態を取得
   let savedChecks = {};
   try {
     const saved = localStorage.getItem(getStorageKey());
@@ -630,7 +635,6 @@ function renderMasterChecklist() {
     const item = document.createElement("div");
     item.className = "member-item";
     
-    // 保存された状態があればそれを適用、なければデフォルトでchecked
     let isChecked = (savedChecks[p] !== undefined) ? savedChecks[p] : true;
 
     item.innerHTML = `
@@ -657,7 +661,6 @@ function addNewPlayer() {
   if (!name) return;
   if (!appState.masterPlayers.includes(name)) {
     appState.masterPlayers.push(name);
-    // 追加時はデフォルトでチェックON状態として保存
     try {
       let saved = JSON.parse(localStorage.getItem(getStorageKey()) || "{}");
       saved[name] = true;
@@ -668,7 +671,6 @@ function addNewPlayer() {
   input.value = "";
 }
 
-// エンターキーで新しいプレイヤーを追加できるようにする
 function handleNewPlayerKeyDown(e) {
   if (e.key === 'Enter') {
     e.preventDefault();
@@ -699,15 +701,12 @@ function makeRandomTeams() {
   let shuffled = [...selectedPlayers].sort(() => Math.random() - 0.5);
 
   if (splitMode === 'handicap1_p1') {
-    // 1Pが1人、2Pが残り全員
     appState.team1Members = [shuffled[0]];
     appState.team2Members = shuffled.slice(1);
   } else if (splitMode === 'handicap1_p2') {
-    // 1Pが残り全員、2Pが1人
     appState.team1Members = shuffled.slice(1);
     appState.team2Members = [shuffled[0]];
   } else {
-    // 通常半々
     const half = Math.ceil(shuffled.length / 2);
     appState.team1Members = shuffled.slice(0, half);
     appState.team2Members = shuffled.slice(half);
@@ -750,7 +749,6 @@ function openOrderModal(teamKey) {
 
   document.getElementById("modalTitle").textContent = `${teamKey === '1' ? '🔴 1Pチーム' : '🔵 2Pチーム'} オーダー設定 (${slotCount}枠)`;
   
-  // モードに応じてボタンや表示を切り替え
   const modeElement = document.querySelector('input[name="orderMode"]:checked');
   const isFullRandom = modeElement && modeElement.value === 'fullRandom';
   const fillBtn = document.getElementById("btnFillAll");
@@ -818,7 +816,6 @@ function renderModalRows(members, orders, isFullRandom = false) {
     const charInfo = allCharacters.find(c => c.id === slot.charId);
 
     if (isFullRandom) {
-      // ②のモード：キャラ選択は行わせず、プレイヤー名（枠数・担当）の割り当て・並べ替えのみ行う
       row.innerHTML = `
         <span class="drag-handle">☰</span>
         <div class="arrow-group">
@@ -936,8 +933,31 @@ function saveOrderModal() {
     });
   });
 
+  // --- キャラ重複チェック処理の追加 ---
+  if (mode !== 'fullRandom') {
+    let charCounts = {};
+    let duplicateChars = [];
+    tempSelections.forEach(slot => {
+      if (slot.charId) {
+        charCounts[slot.charId] = (charCounts[slot.charId] || 0) + 1;
+        if (charCounts[slot.charId] === 2) {
+          const cObj = allCharacters.find(c => c.id === slot.charId);
+          duplicateChars.push(cObj ? cObj.name : slot.charId);
+        }
+      }
+    });
+
+    if (duplicateChars.length > 0) {
+      let charNamesStr = duplicateChars.join("、");
+      let ok = confirm(`【注意】同じキャラクター（${charNamesStr} など）が2体以上選択されています。\n\nこのまま設定を完了してもよろしいですか？`);
+      if (!ok) {
+        return; // キャンセルされた場合は保存処理を中断してモーダルに留まる
+      }
+    }
+  }
+  // ------------------------------------
+
   if (mode === 'counterPick') {
-    // 1人目は表示状態、2〜16人目は非表示(revealed: false)にしてベンチへ
     tempSelections[0].revealed = true;
     for (let i = 1; i < tempSelections.length; i++) {
       tempSelections[i].revealed = false;
@@ -951,7 +971,6 @@ function saveOrderModal() {
     targetOrders.match = finalOrder;
     targetOrders.bench = [];
   } else if (mode === 'fullRandom') {
-    // ②のモード：プレイヤー名配列のみを使用し、裏側でキャラクターを完全にランダム割振し、すべて非表示（？？？）にする
     let shuffledChars = [...allCharacters].sort(() => Math.random() - 0.5);
     let fullRandomOrder = tempSelections.map((slot, idx) => {
       const chosenChar = shuffledChars[idx % shuffledChars.length];
